@@ -25,7 +25,8 @@ namespace otm_simulator.Controllers
         public async Task<Timetable> Get(int id)
         {
             _logger.LogInformation("Get timetable route accessed");
-            return await _timetableProvider.FetchAsync();
+            await _timetableProvider.FetchCoursesAsync();
+            return _timetableProvider.Timetable;
         }
     }
 }
