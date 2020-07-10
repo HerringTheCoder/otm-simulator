@@ -22,7 +22,7 @@ namespace otm_simulator.Controllers
         }
 
         [HttpGet]
-        public async Task<Timetable> Get(int id)
+        public async Task<Timetable> Get()
         {
             _logger.LogInformation("Get timetable route accessed");
             await _timetableProvider.FetchCoursesAsync();
