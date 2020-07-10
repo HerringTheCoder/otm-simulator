@@ -5,7 +5,6 @@ using otm_simulator.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace otm_simulator.Services
 {
@@ -18,9 +17,8 @@ namespace otm_simulator.Services
         public List<BusState> BusStates { get; set; }
 
         private readonly ITimetableProvider _timetableProvider;
-        private IEnumerable<Course> courses;
-        private IEnumerable<Station> stations;
-        private IOptions<AppSettings> _appSettings;
+        private IEnumerable<Path> paths;
+        private readonly IOptions<AppSettings> _appSettings;
 
         public StateGeneratorService(ITimetableProvider timetableProvider, IOptions<AppSettings> appSettings)
         {
@@ -34,8 +32,7 @@ namespace otm_simulator.Services
         /// </summary>
         public void SyncDataWithProvider()
         {
-            courses = _timetableProvider.Timetable.Courses;
-            stations = _timetableProvider.Timetable.Stations;
+            paths = _timetableProvider.Timetable.Paths;
         }
 
         /// <summary>
@@ -78,19 +75,21 @@ namespace otm_simulator.Services
         /// <summary>
         /// Creates new BusStates based on expected schedule
         /// </summary>
-        public async Task CreateStatesAsync()
+        public void CreateStatesAsync()
         {
             DateTime currentTime = DateTime.Now;
-            foreach (Course course in courses)
+            foreach (Path path in paths)
             {
-                var startTime = DateTime.Parse(course.StartTime);
-                if (currentTime > startTime
-                    && currentTime <= startTime.AddMinutes(stations.Last().TravelTime)
-                    && !BusStates.Any(item => item.Course.ID == course.ID))
+                foreach (Course course in path.Courses)
                 {
-                    await _timetableProvider.FetchStationsAsync(course.PathID);
-                    BusStates.Add(new BusState((List<Station>)stations, course, _appSettings.Value.UpdateInterval));
-                    Console.WriteLine("Successfully created a new BusState");
+                    var startTime = DateTime.Parse(course.StartTime);
+                    if (currentTime > startTime
+                        && currentTime <= startTime.AddMinutes(path.Stations.Last().TravelTime)
+                        && !BusStates.Any(item => item.Course.ID == course.ID))
+                    {
+                        BusStates.Add(new BusState(path.Stations, course, _appSettings.Value.UpdateInterval));
+                        Console.WriteLine("Successfully created a new BusState");
+                    }
                 }
             }
         }

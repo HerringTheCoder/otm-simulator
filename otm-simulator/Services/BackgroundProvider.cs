@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Hosting;
-using otm_simulator.Helpers;
 using otm_simulator.Interfaces;
 using System;
 using System.Threading;
@@ -11,7 +10,7 @@ namespace otm_simulator.Services
     {
         private readonly ITimetableProvider _timetableProvider;
 
-        private IStateGenerator _stateGenerator;
+        private readonly IStateGenerator _stateGenerator;
 
         public BackgroundProvider(ITimetableProvider timetableProvider, IStateGenerator stateGenerator)
         {
@@ -24,11 +23,11 @@ namespace otm_simulator.Services
             while (!stoppingToken.IsCancellationRequested)
             {
                 Console.WriteLine("BackgroundProvider is attempting Courses fetch...");
-                await _timetableProvider.FetchCoursesAsync();
+                await _timetableProvider.FetchAsync();
                 Console.WriteLine("Data fetch executed successfully at: " + _timetableProvider.Timetable.UpdatedAt);
                 Console.WriteLine("Synchronizing StateGenerator data...");
                 _stateGenerator.SyncDataWithProvider();
-                await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);                           
+                await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
                 Console.WriteLine();
             }
             Console.WriteLine("BackgroundProvider background task is stopping.");

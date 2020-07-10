@@ -1,4 +1,3 @@
-using Microsoft.VisualBasic.CompilerServices;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,7 +41,12 @@ namespace otm_simulator.Models
         {
             int travelTime1 = Stations[DestinationStationIndex].TravelTime;
             int travelTime2 = Stations[DestinationStationIndex + 1].TravelTime;
-            return (travelTime2 - travelTime1) * 60 / UpdateInterval;
+            int estimatedSteps = (travelTime2 - travelTime1) * 60 / UpdateInterval;
+            if (estimatedSteps == 0 && ExecutedSteps >= estimatedSteps)
+            {
+                SetNextDestination();
+            }
+            return estimatedSteps;
         }
 
         /// <summary>
@@ -56,13 +60,24 @@ namespace otm_simulator.Models
             CurrentPosition = new Position
             {
                 Lat = start.Lat + (finish.Lat - start.Lat) * ((double)ExecutedSteps / EstimatedSteps),
-                Lng = start.Lng + (finish.Lng - start.Lng) * ((double)ExecutedSteps / EstimatedSteps),                
+                Lng = start.Lng + (finish.Lng - start.Lng) * ((double)ExecutedSteps / EstimatedSteps),
             };
-            if(ExecutedSteps == EstimatedSteps)
+            if (CurrentPosition.Lat == finish.Lat && CurrentPosition.Lng == finish.Lat)
             {
-                DestinationStationIndex++;
+                Console.WriteLine("STATION REACHED");
+                SetNextDestination();
             }
         }
 
+        /// <summary>
+        /// Sets parameters for next destination
+        /// </summary>
+        public void SetNextDestination()
+        {
+            DestinationStationIndex++;
+            EstimatedSteps = CalculateEstimatedSteps(5);
+            ExecutedSteps = 0;
+            CurrentPosition = Stations[DestinationStationIndex++].Position;
+        }
     }
 }

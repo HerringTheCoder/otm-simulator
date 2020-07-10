@@ -15,7 +15,7 @@ namespace otm_simulator.Services
         async Task<T> ITimetableAdapter<T>.DeserializeAsync(HttpResponseMessage response)
         {
             using var responseStream = await response.Content.ReadAsStreamAsync();
-            return await JsonSerializer.DeserializeAsync<T>(responseStream);          
+            return await JsonSerializer.DeserializeAsync<T>(responseStream);
         }
 
         /// <summary>

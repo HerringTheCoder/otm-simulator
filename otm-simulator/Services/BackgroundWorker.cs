@@ -1,13 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using otm_simulator.Helpers;
 using otm_simulator.Interfaces;
-using otm_simulator.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,7 +15,7 @@ namespace otm_simulator.Services
         private readonly IOptions<AppSettings> _appSettings;
 
         public BackgroundWorker(
-            ITimetableProvider timetableProvider, 
+            ITimetableProvider timetableProvider,
             IStateGenerator stateGenerator,
             IOptions<AppSettings> appSettings)
         {
@@ -33,12 +28,12 @@ namespace otm_simulator.Services
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                if (_timetableProvider.Timetable.Courses != null)
+                if (_timetableProvider.Timetable.UpdatedAt != null)
                 {
                     Console.WriteLine("BackgroundWorker is releasing overdue states... ");
                     _stateGenerator.ReleaseStates();
                     Console.WriteLine("BackgroundWorker is detecting and creating states...");
-                    await _stateGenerator.CreateStatesAsync();
+                    _stateGenerator.CreateStatesAsync();
                     Console.WriteLine("BackgroundWorker is updating states...");
                     _stateGenerator.UpdateStates();
                 }

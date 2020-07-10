@@ -5,7 +5,7 @@ namespace otm_simulator.Controllers
     [Route("[controller]")]
     [ApiController]
     public class PathController : ControllerBase
-    {      
+    {
         // GET: /<PathController>
         [HttpGet]
         public string Get()

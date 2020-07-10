@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace otm_simulator.Interfaces
+﻿namespace otm_simulator.Interfaces
 {
     public interface IStateGenerator
     {
         public void UpdateStates();
 
-        public Task CreateStatesAsync();
+        public void CreateStatesAsync();
 
         public void ReleaseStates();
 

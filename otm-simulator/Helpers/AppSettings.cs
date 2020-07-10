@@ -16,10 +16,6 @@
 
     public class Routes
     {
-        public string Courses { get; set; }
-
-        public string Stations { get; set; }
-
-        public string Paths { get; set; }
-    } 
+        public string Timetable { get; set; }
+    }
 }
