@@ -33,7 +33,7 @@ namespace otm_simulator.Services
                     Console.WriteLine("BackgroundWorker is releasing overdue states... ");
                     _stateGenerator.ReleaseStates();
                     Console.WriteLine("BackgroundWorker is detecting and creating states...");
-                    _stateGenerator.CreateStatesAsync();
+                    _stateGenerator.CreateStates();
                     Console.WriteLine("BackgroundWorker is updating states...");
                     _stateGenerator.UpdateStates();
                 }

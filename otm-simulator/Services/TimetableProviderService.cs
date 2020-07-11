@@ -33,16 +33,20 @@ namespace otm_simulator.Services
         public async Task FetchAsync()
         {
             var request = PrepareRequest(HttpMethod.Get, _appSettings.Value.OtmApiConnection.Routes.Timetable);
-            var response = await FetchData(request);
+            var response = await GetHttpResponse(request);
             if (response.IsSuccessStatusCode)
             {
                 Timetable.Paths = await _pathsDataAdapter.DeserializeAsync(response);
             }
-
             Timetable.UpdatedAt = DateTime.Now;
         }
 
-        public async Task<HttpResponseMessage> FetchData(HttpRequestMessage request)
+        /// <summary>
+        /// Sends a Request based on provided HttpRequestMessage.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns>Http Response</returns>
+        public async Task<HttpResponseMessage> GetHttpResponse(HttpRequestMessage request)
         {
             HttpClient client = _clientFactory.CreateClient();
             client.BaseAddress = new Uri(_appSettings.Value.OtmApiConnection.BasePath);
@@ -50,6 +54,12 @@ namespace otm_simulator.Services
             return response;
         }
 
+        /// <summary>
+        /// Prepares request based on provided method and path.
+        /// </summary>
+        /// <param name="method"></param>
+        /// <param name="path"></param>
+        /// <returns>HttpRequestMessage object</returns>
         private HttpRequestMessage PrepareRequest(HttpMethod method, string path)
         {
             var request = new HttpRequestMessage(method, path);
