@@ -65,7 +65,7 @@ namespace otm_simulator.Services
         /// </summary>
         public void ReleaseStates()
         {
-            int removedItemsCount = BusStates.RemoveAll(item => item.Delay.TotalMinutes >= 30);
+            int removedItemsCount = BusStates.RemoveAll(item => item.Delay >= 30);
             if (removedItemsCount > 0)
             {
                 Console.WriteLine("Released {0} BusStates due to the excessive delay.", removedItemsCount);
@@ -75,7 +75,7 @@ namespace otm_simulator.Services
         /// <summary>
         /// Creates new BusStates based on expected schedule
         /// </summary>
-        public void CreateStatesAsync()
+        public void CreateStates()
         {
             DateTime currentTime = DateTime.Now;
             foreach (Path path in paths)
@@ -92,6 +92,22 @@ namespace otm_simulator.Services
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Get list of all active BusState objects
+        /// </summary>
+        /// <returns></returns>
+        public List<BusState> GetStates()
+        {
+            return BusStates;
+        }
+
+        public List<BusState> GetPathState(int pathId)
+        {
+            return BusStates
+                .Where(busState => busState.Course.PathID == pathId)
+                .ToList();          
         }
     }
 }
