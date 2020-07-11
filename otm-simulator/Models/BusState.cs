@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace otm_simulator.Models
 {
@@ -10,42 +11,43 @@ namespace otm_simulator.Models
 
         public string Status { get; set; }
 
-        public TimeSpan Delay { get; set; }
+        public int Delay { get; set; }
 
         public Course Course { get; set; }
 
-        public List<Station> Stations { get; set; }
+        public List<Station> Stations { internal get; set; }
 
-        public int DestinationStationIndex { get; set; }
+        public int DestinationStationIndex { internal get; set; }
 
-        public int ExecutedSteps { get; set; }
+        public int ExecutedSteps { internal get; set; }
 
-        public int EstimatedSteps { get; set; }
+        public int EstimatedSteps { internal get; set; }
 
         public BusState(List<Station> stations, Course course, int UpdateInterval)
         {
             CurrentPosition = stations.First().Position;
             Status = "Standing by...";
-            Delay = new TimeSpan(0);
+            Delay = 0;
             Course = course;
             Stations = stations;
-            DestinationStationIndex = 0;
+            DestinationStationIndex = 1;
             ExecutedSteps = 0;
             EstimatedSteps = CalculateEstimatedSteps(UpdateInterval);
+            while (EstimatedSteps == 0 && DestinationStationIndex < Stations.Count())
+            {
+                SetNextDestination();
+                EstimatedSteps = CalculateEstimatedSteps(UpdateInterval);           
+            }
         }
 
         /// <summary>
         /// Calculates estimated travel time between two stations
         /// </summary>
-        private int CalculateEstimatedSteps(int UpdateInterval)
+        private int CalculateEstimatedSteps(int updateInterval)
         {
-            int travelTime1 = Stations[DestinationStationIndex].TravelTime;
-            int travelTime2 = Stations[DestinationStationIndex + 1].TravelTime;
-            int estimatedSteps = (travelTime2 - travelTime1) * 60 / UpdateInterval;
-            if (estimatedSteps == 0 && ExecutedSteps >= estimatedSteps)
-            {
-                SetNextDestination();
-            }
+            int travelTime1 = Stations[DestinationStationIndex - 1].TravelTime;
+            int travelTime2 = Stations[DestinationStationIndex].TravelTime;
+            int estimatedSteps = (travelTime2 - travelTime1) * 60 / updateInterval;        
             return estimatedSteps;
         }
 
@@ -54,8 +56,8 @@ namespace otm_simulator.Models
         /// </summary>
         public void CalculateNextStepPosition()
         {
-            Position start = Stations[DestinationStationIndex].Position;
-            Position finish = Stations[DestinationStationIndex + 1].Position;
+            Position start = Stations[DestinationStationIndex - 1].Position;
+            Position finish = Stations[DestinationStationIndex].Position;
             ExecutedSteps++;
             CurrentPosition = new Position
             {
@@ -74,10 +76,9 @@ namespace otm_simulator.Models
         /// </summary>
         public void SetNextDestination()
         {
-            DestinationStationIndex++;
-            EstimatedSteps = CalculateEstimatedSteps(5);
+            DestinationStationIndex++;     
             ExecutedSteps = 0;
-            CurrentPosition = Stations[DestinationStationIndex++].Position;
+            CurrentPosition = Stations[DestinationStationIndex+1].Position;
         }
     }
 }

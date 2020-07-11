@@ -11,6 +11,6 @@ namespace otm_simulator.Models
         public int PathID { get; set; }
 
         [JsonPropertyName("start_time")]
-        public string StartTime { get; set; }
+        public string StartTime { internal get; set; }
     }
 }
