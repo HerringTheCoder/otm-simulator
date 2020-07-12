@@ -6,17 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata.Ecma335;
 
 namespace otm_simulator.Services
 {
     public class StateGeneratorService : IStateGenerator
-    {
-        private static readonly string[] Statuses = new[]
-         {
-            "Driving", "Delayed", "Standing by..."
-        };
+    {       
         public List<BusState> BusStates { get; set; }
-
         private readonly ITimetableProvider _timetableProvider;
         private IEnumerable<Path> paths;
         private readonly IOptions<AppSettings> _appSettings;
@@ -40,11 +36,10 @@ namespace otm_simulator.Services
         /// Updates all available states by drawing random Status and updating CurrentPosition value
         /// </summary>
         public void UpdateStates()
-        {
-            var random = new Random();
+        {            
             foreach (BusState busState in BusStates)
             {
-                busState.Status = Statuses[random.Next(3)];
+                busState.Status = GetRandomizedStatus();
                 if (busState.Status == "Driving")
                 {
                     busState.CalculateNextStepPosition();
@@ -63,10 +58,14 @@ namespace otm_simulator.Services
                     Console.WriteLine("BusState delay has increased.");
                     busState.Delay += _appSettings.Value.UpdateInterval;
                 }
-                else
+                else if(busState.Status == "Standing by")
                 {
                     Console.WriteLine("BusState position unchanged");
                     busState.ExecutedSteps++;
+                }
+                else
+                {
+                    Console.WriteLine("Unrecognized status!");
                 }
 
                 while (busState.ExecutedSteps >= busState.EstimatedSteps)
@@ -79,7 +78,7 @@ namespace otm_simulator.Services
         }
 
         /// <summary>
-        /// Releases excessively delayed BusStates
+        /// Releases overdue (delayed or finished) BusStates
         /// </summary>
         public void ReleaseStates()
         {
@@ -118,7 +117,7 @@ namespace otm_simulator.Services
         /// <summary>
         /// Get list of all active BusState objects
         /// </summary>
-        /// <returns></returns>
+        /// <returns>List of BusState objects</returns>
         public List<BusState> GetStates()
         {
             return BusStates;
@@ -128,12 +127,30 @@ namespace otm_simulator.Services
         /// Get list of all active BusState objects which contain provided PathID
         /// </summary>
         /// <param name="pathId"></param>
-        /// <returns></returns>
+        /// <returns>List of BusState objects</returns>
         public List<BusState> GetPathState(int pathId)
         {
             return BusStates
                 .Where(busState => busState.Course.PathID == pathId)
                 .ToList();
+        }
+
+        /// <summary>
+        /// Gets randomized status based on pre-configured weights
+        /// </summary>
+        /// <returns>string containing drawn status name</returns>
+        private string GetRandomizedStatus()
+        {
+            Dictionary<string, double> statusRatioDictionary = _appSettings.Value.StatusRatio;
+            var random = new Random();
+            double totalRatio = statusRatioDictionary.Sum(statusRatio => statusRatio.Value);
+            double rngNumber = random.NextDouble()*totalRatio;            
+            foreach (var statusRatio in statusRatioDictionary.OrderBy(item => item.Value))
+            {
+               if((statusRatio.Value - rngNumber) > 0)
+                {return statusRatio.Key; }
+            }
+            return "Unknown";
         }
     }
 }

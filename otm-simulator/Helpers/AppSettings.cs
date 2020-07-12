@@ -1,11 +1,17 @@
-﻿namespace otm_simulator.Helpers
+﻿using System.Collections.Generic;
+
+namespace otm_simulator.Helpers
 {
     public class AppSettings
     {
+        public StatusRatio StatusRatio { get; set; }
+
         public OtmApiConnection OtmApiConnection { get; set; }
 
         public int UpdateInterval { get; set; }
     }
+
+    public class StatusRatio:Dictionary<string, double>{}
 
     public class OtmApiConnection
     {
