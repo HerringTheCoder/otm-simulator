@@ -5,6 +5,7 @@ using otm_simulator.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace otm_simulator.Services
 {
@@ -12,7 +13,7 @@ namespace otm_simulator.Services
     {
         private static readonly string[] Statuses = new[]
          {
-            "Driving", "Standing by..."
+            "Driving", "Delayed", "Standing by..."
         };
         public List<BusState> BusStates { get; set; }
 
@@ -43,18 +44,35 @@ namespace otm_simulator.Services
             var random = new Random();
             foreach (BusState busState in BusStates)
             {
-                busState.Status = Statuses[random.Next(2)];
+                busState.Status = Statuses[random.Next(3)];
                 if (busState.Status == "Driving")
                 {
                     busState.CalculateNextStepPosition();
 
-                    Console.WriteLine("BusState position changed to Y:{0}, X:{1}",
+                    Console.WriteLine("BusState position changed to Y:{0}, X:{1}, Current Progress: {2}/{3}, Overall Progress: {4}/{5}, Delay: {6}",
                         busState.CurrentPosition.Lat,
-                        busState.CurrentPosition.Lng);
+                        busState.CurrentPosition.Lng,
+                        busState.ExecutedSteps,
+                        busState.EstimatedSteps,
+                        busState.DestinationStationIndex,
+                        busState.Stations.Count(),
+                        busState.Delay);
+                }
+                else if (busState.Status == "Delayed")
+                {
+                    Console.WriteLine("BusState delay has increased.");
+                    busState.Delay += _appSettings.Value.UpdateInterval;
                 }
                 else
                 {
-                    Console.WriteLine("BusState position unchanged...");
+                    Console.WriteLine("BusState position unchanged");
+                    busState.ExecutedSteps++;
+                }
+
+                while (busState.ExecutedSteps >= busState.EstimatedSteps)
+                {
+                    Console.WriteLine("Next station reached!");
+                    busState.SetNextDestination();
                 }
             }
             Console.WriteLine("Updated {0} BusState(s)", BusStates.Count());
@@ -65,10 +83,13 @@ namespace otm_simulator.Services
         /// </summary>
         public void ReleaseStates()
         {
-            int removedItemsCount = BusStates.RemoveAll(item => item.Delay >= 30);
+            int removedItemsCount = BusStates.RemoveAll(item =>
+        DateTime.Now.TimeOfDay > DateTime.Parse(item.Course.StartTime).AddMinutes(item.Stations.Last().TravelTime).AddSeconds(item.Delay).TimeOfDay ||
+        item.Delay >= 15 * 60 ||
+        item.DestinationStationIndex == item.Stations.Count);
             if (removedItemsCount > 0)
             {
-                Console.WriteLine("Released {0} BusStates due to the excessive delay.", removedItemsCount);
+                Console.WriteLine("Released {0} overdue states", removedItemsCount);
             }
         }
 
@@ -83,9 +104,9 @@ namespace otm_simulator.Services
                 foreach (Course course in path.Courses)
                 {
                     var startTime = DateTime.Parse(course.StartTime);
-                    if (currentTime > startTime
-                        && currentTime <= startTime.AddMinutes(path.Stations.Last().TravelTime)
-                        && !BusStates.Any(item => item.Course.ID == course.ID))
+                    if (currentTime < startTime.AddSeconds(_appSettings.Value.UpdateInterval) &&
+                        currentTime > startTime.AddSeconds(-_appSettings.Value.UpdateInterval) &&
+                        !BusStates.Any(item => item.Course.ID == course.ID))
                     {
                         BusStates.Add(new BusState(path.Stations, course, _appSettings.Value.UpdateInterval));
                         Console.WriteLine("Successfully created a new BusState");
@@ -103,11 +124,16 @@ namespace otm_simulator.Services
             return BusStates;
         }
 
+        /// <summary>
+        /// Get list of all active BusState objects which contain provided PathID
+        /// </summary>
+        /// <param name="pathId"></param>
+        /// <returns></returns>
         public List<BusState> GetPathState(int pathId)
         {
             return BusStates
                 .Where(busState => busState.Course.PathID == pathId)
-                .ToList();          
+                .ToList();
         }
     }
 }
