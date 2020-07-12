@@ -33,10 +33,10 @@ namespace otm_simulator.Models
             DestinationStationIndex = 1;
             ExecutedSteps = 0;
             EstimatedSteps = CalculateEstimatedSteps(UpdateInterval);
-            while (EstimatedSteps == 0 && DestinationStationIndex < Stations.Count())
+            while (EstimatedSteps == 0 && DestinationStationIndex <= Stations.Count())
             {
                 SetNextDestination();
-                EstimatedSteps = CalculateEstimatedSteps(UpdateInterval);           
+                EstimatedSteps = CalculateEstimatedSteps(UpdateInterval);       
             }
         }
 
@@ -64,11 +64,6 @@ namespace otm_simulator.Models
                 Lat = start.Lat + (finish.Lat - start.Lat) * ((double)ExecutedSteps / EstimatedSteps),
                 Lng = start.Lng + (finish.Lng - start.Lng) * ((double)ExecutedSteps / EstimatedSteps),
             };
-            if (CurrentPosition.Lat == finish.Lat && CurrentPosition.Lng == finish.Lat)
-            {
-                Console.WriteLine("STATION REACHED");
-                SetNextDestination();
-            }
         }
 
         /// <summary>
@@ -76,9 +71,9 @@ namespace otm_simulator.Models
         /// </summary>
         public void SetNextDestination()
         {
-            DestinationStationIndex++;     
+            DestinationStationIndex++;  
             ExecutedSteps = 0;
-            CurrentPosition = Stations[DestinationStationIndex+1].Position;
+            CurrentPosition = Stations[DestinationStationIndex-1].Position;
         }
     }
 }
