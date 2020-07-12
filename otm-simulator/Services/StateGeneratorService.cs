@@ -5,13 +5,11 @@ using otm_simulator.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Reflection.Metadata.Ecma335;
 
 namespace otm_simulator.Services
 {
     public class StateGeneratorService : IStateGenerator
-    {       
+    {
         public List<BusState> BusStates { get; set; }
         private readonly ITimetableProvider _timetableProvider;
         private IEnumerable<Path> paths;
@@ -36,7 +34,7 @@ namespace otm_simulator.Services
         /// Updates all available states by drawing random Status and updating CurrentPosition value
         /// </summary>
         public void UpdateStates()
-        {            
+        {
             foreach (BusState busState in BusStates)
             {
                 busState.Status = GetRandomizedStatus();
@@ -58,7 +56,7 @@ namespace otm_simulator.Services
                     Console.WriteLine("BusState delay has increased.");
                     busState.Delay += _appSettings.Value.UpdateInterval;
                 }
-                else if(busState.Status == "Standing by")
+                else if (busState.Status == "Standing by")
                 {
                     Console.WriteLine("BusState position unchanged");
                     busState.ExecutedSteps++;
@@ -144,11 +142,11 @@ namespace otm_simulator.Services
             Dictionary<string, double> statusRatioDictionary = _appSettings.Value.StatusRatio;
             var random = new Random();
             double totalRatio = statusRatioDictionary.Sum(statusRatio => statusRatio.Value);
-            double rngNumber = random.NextDouble()*totalRatio;            
+            double rngNumber = random.NextDouble() * totalRatio;
             foreach (var statusRatio in statusRatioDictionary.OrderBy(item => item.Value))
             {
-               if((statusRatio.Value - rngNumber) > 0)
-                {return statusRatio.Key; }
+                if ((statusRatio.Value - rngNumber) > 0)
+                { return statusRatio.Key; }
             }
             return "Unknown";
         }

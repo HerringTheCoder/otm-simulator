@@ -14,8 +14,8 @@ namespace otm_simulator.Controllers
         private readonly IStateGenerator _stateGenerator;
         private readonly ILogger<UpdateController> _logger;
 
-        public UpdateController(ILogger<UpdateController> logger, 
-            ITimetableProvider timetableProvider, 
+        public UpdateController(ILogger<UpdateController> logger,
+            ITimetableProvider timetableProvider,
             IStateGenerator stateGenerator)
         {
             _logger = logger;
@@ -28,7 +28,7 @@ namespace otm_simulator.Controllers
         {
             _logger.LogInformation("Get /timetable route accessed");
             await _timetableProvider.FetchAsync();
-             _stateGenerator.SyncDataWithProvider();
+            _stateGenerator.SyncDataWithProvider();
             return _timetableProvider.Timetable;
         }
     }

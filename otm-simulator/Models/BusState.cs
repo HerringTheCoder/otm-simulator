@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json.Serialization;
 
 namespace otm_simulator.Models
 {
@@ -36,7 +34,7 @@ namespace otm_simulator.Models
             while (EstimatedSteps == 0 && DestinationStationIndex <= Stations.Count())
             {
                 SetNextDestination();
-                EstimatedSteps = CalculateEstimatedSteps(UpdateInterval);       
+                EstimatedSteps = CalculateEstimatedSteps(UpdateInterval);
             }
         }
 
@@ -47,7 +45,7 @@ namespace otm_simulator.Models
         {
             int travelTime1 = Stations[DestinationStationIndex - 1].TravelTime;
             int travelTime2 = Stations[DestinationStationIndex].TravelTime;
-            int estimatedSteps = (travelTime2 - travelTime1) * 60 / updateInterval;        
+            int estimatedSteps = (travelTime2 - travelTime1) * 60 / updateInterval;
             return estimatedSteps;
         }
 
@@ -71,9 +69,9 @@ namespace otm_simulator.Models
         /// </summary>
         public void SetNextDestination()
         {
-            DestinationStationIndex++;  
+            DestinationStationIndex++;
             ExecutedSteps = 0;
-            CurrentPosition = Stations[DestinationStationIndex-1].Position;
+            CurrentPosition = Stations[DestinationStationIndex - 1].Position;
         }
     }
 }

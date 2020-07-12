@@ -11,7 +11,7 @@ namespace otm_simulator.Helpers
         public int UpdateInterval { get; set; }
     }
 
-    public class StatusRatio:Dictionary<string, double>{}
+    public class StatusRatio : Dictionary<string, double> { }
 
     public class OtmApiConnection
     {

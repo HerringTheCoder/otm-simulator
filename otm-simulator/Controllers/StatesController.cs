@@ -10,7 +10,6 @@ namespace otm_simulator.Controllers
     public class StatesController : ControllerBase
     {
         private readonly IStateGenerator _stateGenerator;
-   
 
         public StatesController(IStateGenerator stateGenerator)
         {
@@ -21,7 +20,7 @@ namespace otm_simulator.Controllers
         [HttpGet]
         public List<BusState> Get()
         {
-           return _stateGenerator.GetStates();
+            return _stateGenerator.GetStates();
         }
 
         // GET /<StateController>/5
