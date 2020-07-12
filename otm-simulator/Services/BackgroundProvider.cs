@@ -27,7 +27,7 @@ namespace otm_simulator.Services
                 Console.WriteLine("Data fetch executed successfully at: " + _timetableProvider.Timetable.UpdatedAt);
                 Console.WriteLine("Synchronizing StateGenerator data...");
                 _stateGenerator.SyncDataWithProvider();
-                await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
+                await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
                 Console.WriteLine();
             }
             Console.WriteLine("BackgroundProvider background task is stopping.");
