@@ -8,15 +8,19 @@ namespace otm_simulator.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class TimetableController : ControllerBase
+    public class UpdateController : ControllerBase
     {
         private readonly ITimetableProvider _timetableProvider;
-        private readonly ILogger<TimetableController> _logger;
+        private readonly IStateGenerator _stateGenerator;
+        private readonly ILogger<UpdateController> _logger;
 
-        public TimetableController(ILogger<TimetableController> logger, ITimetableProvider timetableProvider)
+        public UpdateController(ILogger<UpdateController> logger, 
+            ITimetableProvider timetableProvider, 
+            IStateGenerator stateGenerator)
         {
             _logger = logger;
             _timetableProvider = timetableProvider;
+            _stateGenerator = stateGenerator;
         }
 
         [HttpGet]
@@ -24,6 +28,7 @@ namespace otm_simulator.Controllers
         {
             _logger.LogInformation("Get /timetable route accessed");
             await _timetableProvider.FetchAsync();
+             _stateGenerator.SyncDataWithProvider();
             return _timetableProvider.Timetable;
         }
     }
