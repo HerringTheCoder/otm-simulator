@@ -2,6 +2,7 @@
 using otm_simulator.Interfaces;
 using otm_simulator.Models;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace otm_simulator.Controllers
 {
@@ -25,9 +26,14 @@ namespace otm_simulator.Controllers
 
         // GET /<StateController>/5
         [HttpGet("{id}")]
-        public List<BusState> Get(int id)
+        public ActionResult<List<BusState>> Get(int id)
         {
-            return _stateGenerator.GetPathState(id);
+            List<BusState> busStates = _stateGenerator.GetPathState(id);
+            if (busStates.Count() == 0)
+            {
+                return NotFound();
+            }
+            return busStates;
         }
 
     }
