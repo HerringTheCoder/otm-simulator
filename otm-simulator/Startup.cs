@@ -21,6 +21,15 @@ namespace otm_simulator
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(
+                    builder =>
+                    {
+                        builder.WithOrigins("http://localhost:8000",
+                                            "http://localhost:8080");
+                    });
+            });
             services.AddControllers();
             services.AddHttpClient();
             services.AddSingleton<ITimetableProvider, TimetableProviderService>();
@@ -42,6 +51,8 @@ namespace otm_simulator
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseCors();
 
             app.UseAuthorization();
 
