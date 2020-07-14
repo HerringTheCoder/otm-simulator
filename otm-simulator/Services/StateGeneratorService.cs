@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using otm_simulator.Helpers;
 using otm_simulator.Interfaces;
 using otm_simulator.Models;
@@ -11,15 +12,19 @@ namespace otm_simulator.Services
     public class StateGeneratorService : IStateGenerator
     {
         public List<BusState> BusStates { get; set; }
-        private readonly ITimetableProvider _timetableProvider;
         private IEnumerable<Path> paths;
+        private readonly ITimetableProvider _timetableProvider;      
         private readonly IOptions<AppSettings> _appSettings;
+        private readonly ILogger<StateGeneratorService> _logger;
 
-        public StateGeneratorService(ITimetableProvider timetableProvider, IOptions<AppSettings> appSettings)
+        public StateGeneratorService(ITimetableProvider timetableProvider, 
+            IOptions<AppSettings> appSettings,
+            ILogger<StateGeneratorService> logger)
         {
             _timetableProvider = timetableProvider;
             _appSettings = appSettings;
-            BusStates = new List<BusState>();
+            _logger = logger;
+            BusStates = new List<BusState>();            
         }
 
         /// <summary>
@@ -42,7 +47,7 @@ namespace otm_simulator.Services
                 {
                     busState.CalculateNextStepPosition();
 
-                    Console.WriteLine("BusState position changed to Y:{0}, X:{1}, Current Progress: {2}/{3}, Overall Progress: {4}/{5}, Delay: {6}",
+                    _logger.LogInformation("BusState position changed to Y:{0}, X:{1}, Current Progress: {2}/{3}, Overall Progress: {4}/{5}, Delay: {6}",
                         busState.CurrentPosition.Lat,
                         busState.CurrentPosition.Lng,
                         busState.ExecutedSteps,
@@ -53,26 +58,26 @@ namespace otm_simulator.Services
                 }
                 else if (busState.Status == "Delayed")
                 {
-                    Console.WriteLine("BusState delay has increased.");
+                    _logger.LogInformation("BusState delay has increased.");
                     busState.Delay += _appSettings.Value.UpdateInterval;
                 }
                 else if (busState.Status == "Standing by")
                 {
-                    Console.WriteLine("BusState position unchanged");
+                    _logger.LogInformation("BusState position unchanged");
                     busState.ExecutedSteps++;
                 }
                 else
                 {
-                    Console.WriteLine("Unrecognized status!");
+                    _logger.LogInformation("Unrecognized status!");
                 }
 
                 while (busState.ExecutedSteps >= busState.EstimatedSteps)
                 {
-                    Console.WriteLine("Next station reached!");
+                    _logger.LogInformation("Next station reached!");
                     busState.SetNextDestination();
                 }
             }
-            Console.WriteLine("Updated {0} BusState(s)", BusStates.Count());
+            _logger.LogInformation("Updated {0} BusState(s)", BusStates.Count());
         }
 
         /// <summary>
@@ -86,7 +91,7 @@ namespace otm_simulator.Services
         item.DestinationStationIndex == item.Stations.Count);
             if (removedItemsCount > 0)
             {
-                Console.WriteLine("Released {0} overdue states", removedItemsCount);
+                _logger.LogInformation("Released {0} overdue states", removedItemsCount);
             }
         }
 
@@ -106,7 +111,7 @@ namespace otm_simulator.Services
                         !BusStates.Any(item => item.Course.ID == course.ID))
                     {
                         BusStates.Add(new BusState(path.Stations, course, _appSettings.Value.UpdateInterval));
-                        Console.WriteLine("Successfully created a new BusState");
+                        _logger.LogInformation("Successfully created a new BusState");
                     }
                 }
             }

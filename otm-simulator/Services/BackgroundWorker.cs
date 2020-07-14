@@ -1,6 +1,9 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using otm_simulator.Helpers;
+using otm_simulator.Hubs;
 using otm_simulator.Interfaces;
 using System;
 using System.Threading;
@@ -13,15 +16,21 @@ namespace otm_simulator.Services
         private readonly ITimetableProvider _timetableProvider;
         private readonly IStateGenerator _stateGenerator;
         private readonly IOptions<AppSettings> _appSettings;
+        private readonly IHubContext<StatesHub> _hubContext;
+        private readonly ILogger _logger;
 
         public BackgroundWorker(
             ITimetableProvider timetableProvider,
             IStateGenerator stateGenerator,
-            IOptions<AppSettings> appSettings)
+            IOptions<AppSettings> appSettings,
+            IHubContext<StatesHub> hubContext,
+            ILogger<BackgroundWorker> logger)
         {
             _timetableProvider = timetableProvider;
             _stateGenerator = stateGenerator;
             _appSettings = appSettings;
+            _hubContext = hubContext;
+            _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -30,20 +39,21 @@ namespace otm_simulator.Services
             {
                 if (_timetableProvider.Timetable.UpdatedAt != null)
                 {
-                    Console.WriteLine("BackgroundWorker is releasing overdue states... ");
+                    _logger.LogInformation("BackgroundWorker is releasing overdue states... ");
                     _stateGenerator.ReleaseStates();
-                    Console.WriteLine("BackgroundWorker is detecting and creating states...");
+                    _logger.LogInformation("BackgroundWorker is detecting and creating states...");
                     _stateGenerator.CreateStates();
-                    Console.WriteLine("BackgroundWorker is updating states...");
+                    _logger.LogInformation("BackgroundWorker is updating states...");
                     _stateGenerator.UpdateStates();
+                    await _hubContext.Clients.All.SendAsync("SendStates", _stateGenerator.GetStates());
                 }
                 else
                 {
-                    Console.WriteLine("BackgroundWorker is missing important Timetable data");
+                    _logger.LogInformation("BackgroundWorker is missing important Timetable data");
                 }
                 await Task.Delay(TimeSpan.FromSeconds(_appSettings.Value.UpdateInterval), stoppingToken);
             }
-            Console.WriteLine("BackgroundWorker background task is stopping.");
+            _logger.LogInformation("BackgroundWorker background task is stopping.");
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace otm_simulator.Interfaces
@@ -8,6 +7,6 @@ namespace otm_simulator.Interfaces
     {
         public Task<T> DeserializeAsync(HttpResponseMessage response);
 
-        public Task<Stream> SerializeAsync(T obj);
+        public string Serialize(T obj);
     }
 }

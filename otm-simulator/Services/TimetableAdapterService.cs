@@ -1,5 +1,4 @@
 ﻿using otm_simulator.Interfaces;
-using System.IO;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -22,9 +21,9 @@ namespace otm_simulator.Services
         /// Serializes provided object into JSON response 
         /// </summary>
         /// <param name="obj"></param>
-        Task<Stream> ITimetableAdapter<T>.SerializeAsync(T obj)
+        string ITimetableAdapter<T>.Serialize(T obj)
         {
-            throw new System.NotImplementedException();
+            return JsonSerializer.Serialize<T>(obj);
         }
     }
 }
