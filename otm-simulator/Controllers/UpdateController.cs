@@ -26,7 +26,7 @@ namespace otm_simulator.Controllers
         [HttpGet]
         public async Task<Timetable> Get()
         {
-            _logger.LogInformation("Get /timetable route accessed");
+            _logger.LogInformation("Forced update requested");
             await _timetableProvider.FetchAsync();
             _stateGenerator.SyncDataWithProvider();
             return _timetableProvider.Timetable;
