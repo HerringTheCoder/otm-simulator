@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using otm_simulator.Interfaces;
+﻿using otm_simulator.Interfaces;
 using otm_simulator.Models;
 using System;
 using System.Collections.Generic;
