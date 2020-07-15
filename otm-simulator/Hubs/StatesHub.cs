@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging;
 using otm_simulator.Interfaces;
 using otm_simulator.Models;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

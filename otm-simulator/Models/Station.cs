@@ -5,7 +5,7 @@ namespace otm_simulator.Models
     public class Station
     {
         [JsonPropertyName("id")]
-        public uint ID { get; set; }
+        public int ID { get; set; }
 
         [JsonPropertyName("name")]
         public string Name { get; set; }
