@@ -13,18 +13,21 @@ namespace otm_simulator.Services
     {
         public List<BusState> BusStates { get; set; }
         private IEnumerable<Path> paths;
-        private readonly ITimetableProvider _timetableProvider;      
+        private readonly ITimetableProvider _timetableProvider;
         private readonly IOptions<AppSettings> _appSettings;
         private readonly ILogger<StateGeneratorService> _logger;
+        private readonly ITimeProvider _timeProvider;
 
-        public StateGeneratorService(ITimetableProvider timetableProvider, 
+        public StateGeneratorService(ITimetableProvider timetableProvider,
             IOptions<AppSettings> appSettings,
-            ILogger<StateGeneratorService> logger)
+            ILogger<StateGeneratorService> logger,
+            ITimeProvider timeProvider)
         {
             _timetableProvider = timetableProvider;
             _appSettings = appSettings;
             _logger = logger;
-            BusStates = new List<BusState>();            
+            _timeProvider = timeProvider;
+            BusStates = new List<BusState>();
         }
 
         /// <summary>
@@ -86,7 +89,7 @@ namespace otm_simulator.Services
         public void ReleaseStates()
         {
             int removedItemsCount = BusStates.RemoveAll(item =>
-        DateTime.Now.TimeOfDay > DateTime.Parse(item.Course.StartTime).AddMinutes(item.Stations.Last().TravelTime).AddSeconds(item.Delay).TimeOfDay ||
+        _timeProvider.Now.TimeOfDay > DateTime.Parse(item.Course.StartTime).AddMinutes(item.Stations.Last().TravelTime).AddSeconds(item.Delay).TimeOfDay ||
         item.Delay >= 15 * 60 ||
         item.DestinationStationIndex == item.Stations.Count);
             if (removedItemsCount > 0)
@@ -100,14 +103,13 @@ namespace otm_simulator.Services
         /// </summary>
         public void CreateStates()
         {
-            DateTime currentTime = DateTime.Now;
             foreach (Path path in paths)
             {
                 foreach (Course course in path.Courses)
                 {
                     var startTime = DateTime.Parse(course.StartTime);
-                    if (currentTime < startTime.AddSeconds(_appSettings.Value.UpdateInterval) &&
-                        currentTime > startTime.AddSeconds(-_appSettings.Value.UpdateInterval) &&
+                    if (_timeProvider.Now < startTime.AddSeconds(_appSettings.Value.UpdateInterval) &&
+                        _timeProvider.Now > startTime.AddSeconds(-_appSettings.Value.UpdateInterval) &&
                         !BusStates.Any(item => item.Course.ID == course.ID))
                     {
                         BusStates.Add(new BusState(path.Stations, course, _appSettings.Value.UpdateInterval));
