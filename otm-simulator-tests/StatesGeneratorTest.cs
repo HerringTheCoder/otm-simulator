@@ -40,12 +40,6 @@ namespace otm_simulator_tests
             services.AddSingleton(Mock.Of<IStateGenerator>());
             var serviceProvider = services.AddLogging().BuildServiceProvider();
 
-            var hostedService = serviceProvider.GetService<IHostedService>();
-
-            //Start execution
-            await hostedService.StartAsync(CancellationToken.None);
-            await Task.Delay(TimeSpan.FromSeconds(1));
-            await hostedService.StopAsync(CancellationToken.None);
 
             var stateGeneratorService = serviceProvider.GetRequiredService<IStateGenerator>();
 
