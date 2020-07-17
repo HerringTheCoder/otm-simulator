@@ -16,20 +16,20 @@ namespace otm_simulator.Services
         private readonly ITimetableProvider _timetableProvider;
         private readonly IStateGenerator _stateGenerator;
         private readonly IOptions<AppSettings> _appSettings;
-        //private readonly IHubContext<StatesHub> _hubContext;
+        private readonly IHubContext<StatesHub> _hubContext;
         private readonly ILogger _logger;
 
         public BackgroundWorker(
             ITimetableProvider timetableProvider,
             IStateGenerator stateGenerator,
             IOptions<AppSettings> appSettings,
-            //IHubContext<StatesHub> hubContext,
+            IHubContext<StatesHub> hubContext,
             ILogger<BackgroundWorker> logger)
         {
             _timetableProvider = timetableProvider;
             _stateGenerator = stateGenerator;
             _appSettings = appSettings;
-            //_hubContext = hubContext;
+            _hubContext = hubContext;
             _logger = logger;
         }
 
@@ -45,7 +45,7 @@ namespace otm_simulator.Services
                     _stateGenerator.CreateStates();
                     _logger.LogInformation("BackgroundWorker is updating states...");
                     _stateGenerator.UpdateStates();
-                    //await _hubContext.Clients.All.SendAsync("SendStates", _stateGenerator.GetStates());
+                    await _hubContext.Clients.All.SendAsync("SendStates", _stateGenerator.GetStates());
                 }
                 else
                 {
