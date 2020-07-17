@@ -36,6 +36,7 @@ namespace otm_simulator
             services.AddSingleton<ITimetableProvider, TimetableProviderService>();
             services.Configure<AppSettings>(Configuration);
             services.AddSignalR();
+            services.AddTransient<ITimeProvider, TimeProvider>();
             services.AddTransient(typeof(ITimetableAdapter<>), typeof(TimetableAdapterService<>));
             services.AddSingleton<IHostedService, BackgroundProvider>();
             services.AddSingleton<StatesHub>();
