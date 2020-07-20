@@ -45,41 +45,17 @@ namespace otm_simulator.Services
         {
             foreach (BusState busState in BusStates)
             {
-                Enum.TryParse(GetRandomizedStatus(), out Status result);
-                busState.Status = result;
-                Action action = busState.Status switch
+                string drawnStatus = "";
+                try
                 {
-                    Status.Driving => () =>
-                    {
-                        busState.CalculateNextStepPosition();
-
-                        _logger.LogInformation("BusState position changed to Y:{0}, X:{1}, Current Progress: {2}/{3}, Overall Progress: {4}/{5}, Delay: {6}",
-                            busState.CurrentPosition.Lat,
-                            busState.CurrentPosition.Lng,
-                            busState.ExecutedSteps,
-                            busState.EstimatedSteps,
-                            busState.DestinationStationIndex,
-                            busState.Stations.Count(),
-                            busState.Delay);
-                    },                    
-                    Status.Delayed => () =>
-                    {
-
-                        _logger.LogInformation("BusState delay has increased.");
-                        busState.Delay += _appSettings.Value.UpdateInterval;
-                    },                    
-                    Status.Standing => () =>
-                    {
-                        _logger.LogInformation("BusState position unchanged");
-                        busState.ExecutedSteps++;
-                    },
-                    Status.Unknown => () =>
-                    {
-                        _logger.LogInformation("Unrecognized status!");
-                    },
-                    _ => throw new NotImplementedException()
-                };
-                action();
+                    drawnStatus = GetRandomizedStatus();
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e.Message);
+                    return;
+                }           
+                _logger.LogInformation(busState.ActionDictionary[drawnStatus].Invoke());               
                 while (busState.ExecutedSteps >= busState.EstimatedSteps)
                 {
                     _logger.LogInformation("Next station reached!");
@@ -154,14 +130,18 @@ namespace otm_simulator.Services
         {
             Dictionary<string, double> statusRatioDictionary = _appSettings.Value.StatusRatio;
             var random = new Random();
-            double totalRatio = statusRatioDictionary.Sum(statusRatio => statusRatio.Value);
-            double rngNumber = random.NextDouble() * totalRatio;
-            foreach (var statusRatio in statusRatioDictionary.OrderBy(item => item.Value))
+            double rngNumber = random.NextDouble() * statusRatioDictionary.Sum(statusRatio => statusRatio.Value); ;
+            statusRatioDictionary.OrderBy(item => item.Value);
+            double upperBound = 0;
+            foreach (KeyValuePair<string, double> statusRatio in statusRatioDictionary)
             {
-                if ((statusRatio.Value*totalRatio - rngNumber) < 0)
-                { return statusRatio.Key; }
+                upperBound += statusRatio.Value;
+                if (rngNumber <= upperBound)
+                {
+                    return statusRatio.Key;
+                }
             }
-            return "Unknown";
+            throw new ArgumentOutOfRangeException("Unknown status value");
         }
     }
 }

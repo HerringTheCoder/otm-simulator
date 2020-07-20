@@ -1,14 +1,17 @@
 using otm_simulator.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
 
 namespace otm_simulator.Models
-{    
+{
     public class BusState
     {
         public Position CurrentPosition { get; set; }
 
-        public Status Status { get; set; }
+        public string Status { get; set; }
 
         public int Delay { get; set; }
 
@@ -22,10 +25,12 @@ namespace otm_simulator.Models
 
         public int EstimatedSteps { internal get; set; }
 
+        public Dictionary<string, Func<string>> ActionDictionary { get; set; }
+
         public BusState(List<Station> stations, Course course, int UpdateInterval)
         {
             CurrentPosition = stations.First().Position;
-            Status = Status.Driving;
+            Status = "Standing";
             Delay = 0;
             Course = course;
             Stations = stations;
@@ -37,6 +42,29 @@ namespace otm_simulator.Models
                 SetNextDestination();
                 EstimatedSteps = CalculateEstimatedSteps(UpdateInterval);
             }
+            ActionDictionary = new Dictionary<string, Func<string>>
+            {
+                { "Driving", new Func<string>(() => {
+                    CalculateNextStepPosition();
+                    Status = "Driving";
+                    return $"BusState position changed. Current Progress: {ExecutedSteps}/{EstimatedSteps}, Overall Progress: {DestinationStationIndex}/{Stations.Count()}, Delay: {Delay}";
+                })
+                },
+
+                { "Standing", new Func<string>(() => {
+                    ExecutedSteps++;
+                    Status = "Standing";
+                    return "BusState position unchanged";
+                })
+                },
+
+                { "Delayed", new Func<string>(() => {
+                    Delay++;
+                    Status = "Delayed";
+                    return "BusState delay has increased.";
+                })
+                }
+            };
         }
 
         /// <summary>
