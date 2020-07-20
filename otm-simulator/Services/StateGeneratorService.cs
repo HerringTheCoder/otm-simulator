@@ -45,35 +45,41 @@ namespace otm_simulator.Services
         {
             foreach (BusState busState in BusStates)
             {
-                busState.Status = GetRandomizedStatus();
-                if (busState.Status == "Driving")
+                Enum.TryParse(GetRandomizedStatus(), out Status result);
+                busState.Status = result;
+                Action action = busState.Status switch
                 {
-                    busState.CalculateNextStepPosition();
+                    Status.Driving => () =>
+                    {
+                        busState.CalculateNextStepPosition();
 
-                    _logger.LogInformation("BusState position changed to Y:{0}, X:{1}, Current Progress: {2}/{3}, Overall Progress: {4}/{5}, Delay: {6}",
-                        busState.CurrentPosition.Lat,
-                        busState.CurrentPosition.Lng,
-                        busState.ExecutedSteps,
-                        busState.EstimatedSteps,
-                        busState.DestinationStationIndex,
-                        busState.Stations.Count(),
-                        busState.Delay);
-                }
-                else if (busState.Status == "Delayed")
-                {
-                    _logger.LogInformation("BusState delay has increased.");
-                    busState.Delay += _appSettings.Value.UpdateInterval;
-                }
-                else if (busState.Status == "Standing by")
-                {
-                    _logger.LogInformation("BusState position unchanged");
-                    busState.ExecutedSteps++;
-                }
-                else
-                {
-                    _logger.LogInformation("Unrecognized status!");
-                }
+                        _logger.LogInformation("BusState position changed to Y:{0}, X:{1}, Current Progress: {2}/{3}, Overall Progress: {4}/{5}, Delay: {6}",
+                            busState.CurrentPosition.Lat,
+                            busState.CurrentPosition.Lng,
+                            busState.ExecutedSteps,
+                            busState.EstimatedSteps,
+                            busState.DestinationStationIndex,
+                            busState.Stations.Count(),
+                            busState.Delay);
+                    },                    
+                    Status.Delayed => () =>
+                    {
 
+                        _logger.LogInformation("BusState delay has increased.");
+                        busState.Delay += _appSettings.Value.UpdateInterval;
+                    },                    
+                    Status.Standing => () =>
+                    {
+                        _logger.LogInformation("BusState position unchanged");
+                        busState.ExecutedSteps++;
+                    },
+                    Status.Unknown => () =>
+                    {
+                        _logger.LogInformation("Unrecognized status!");
+                    },
+                    _ => throw new NotImplementedException()
+                };
+                action();
                 while (busState.ExecutedSteps >= busState.EstimatedSteps)
                 {
                     _logger.LogInformation("Next station reached!");
@@ -152,7 +158,7 @@ namespace otm_simulator.Services
             double rngNumber = random.NextDouble() * totalRatio;
             foreach (var statusRatio in statusRatioDictionary.OrderBy(item => item.Value))
             {
-                if ((statusRatio.Value - rngNumber) > 0)
+                if ((statusRatio.Value*totalRatio - rngNumber) < 0)
                 { return statusRatio.Key; }
             }
             return "Unknown";

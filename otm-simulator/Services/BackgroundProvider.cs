@@ -30,8 +30,8 @@ namespace otm_simulator.Services
                 await _timetableProvider.FetchAsync();
                 _logger.LogInformation("Data fetch executed successfully at: " + _timetableProvider.Timetable.UpdatedAt);
                 _logger.LogInformation("Synchronizing StateGenerator data...");
-                _stateGenerator.SyncDataWithProvider();
-                await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);            
+                _stateGenerator.SyncDataWithProvider();              
+                await Task.Delay(TimeSpan.FromMinutes(10), stoppingToken);            
             }
             _logger.LogInformation("BackgroundProvider background task is stopping.");
         }

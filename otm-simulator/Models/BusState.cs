@@ -1,13 +1,14 @@
+using otm_simulator.Helpers;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace otm_simulator.Models
-{
+{    
     public class BusState
     {
         public Position CurrentPosition { get; set; }
 
-        public string Status { get; set; }
+        public Status Status { get; set; }
 
         public int Delay { get; set; }
 
@@ -24,7 +25,7 @@ namespace otm_simulator.Models
         public BusState(List<Station> stations, Course course, int UpdateInterval)
         {
             CurrentPosition = stations.First().Position;
-            Status = "Standing by...";
+            Status = Status.Driving;
             Delay = 0;
             Course = course;
             Stations = stations;
