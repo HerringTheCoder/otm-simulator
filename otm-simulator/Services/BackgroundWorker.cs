@@ -16,14 +16,14 @@ namespace otm_simulator.Services
         private readonly ITimetableProvider _timetableProvider;
         private readonly IStateGenerator _stateGenerator;
         private readonly IOptions<AppSettings> _appSettings;
-        private readonly IHubContext<StatesHub> _hubContext;
+        private readonly IHubContext<StatesHub, IStatesClient> _hubContext;
         private readonly ILogger _logger;
 
         public BackgroundWorker(
             ITimetableProvider timetableProvider,
             IStateGenerator stateGenerator,
             IOptions<AppSettings> appSettings,
-            IHubContext<StatesHub> hubContext,
+            IHubContext<StatesHub, IStatesClient> hubContext,
             ILogger<BackgroundWorker> logger)
         {
             _timetableProvider = timetableProvider;
@@ -45,13 +45,13 @@ namespace otm_simulator.Services
                     _stateGenerator.CreateStates();
                     _logger.LogInformation("BackgroundWorker is updating states...");
                     _stateGenerator.UpdateStates();
-                    await _hubContext.Clients.All.SendAsync("SendStates", _stateGenerator.GetStates());
+                    await _hubContext.Clients.All.SendStates(_stateGenerator.GetStates());
                 }
                 else
                 {
                     _logger.LogInformation("BackgroundWorker is missing important Timetable data");
                 }
-                await Task.Delay(TimeSpan.FromSeconds(_appSettings.Value.UpdateInterval), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(_appSettings.Value.UpdateIntervalInSeconds), stoppingToken);
             }
             _logger.LogInformation("BackgroundWorker background task is stopping.");
         }

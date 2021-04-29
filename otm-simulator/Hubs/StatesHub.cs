@@ -7,21 +7,19 @@ using System.Threading.Tasks;
 
 namespace otm_simulator.Hubs
 {
-    public class StatesHub : Hub
+    public class StatesHub : Hub<IStatesClient>
     {
-        private readonly ITimetableAdapter<List<BusState>> _busStatesAdapter;
         private readonly ILogger _logger;
 
-        public StatesHub(ITimetableAdapter<List<BusState>> busStatesAdapter, ILogger<StatesHub> logger)
+        public StatesHub(ILogger<StatesHub> logger)
         {
-            _busStatesAdapter = busStatesAdapter;
             _logger = logger;
         }
 
-        public Task SendStates(List<BusState> busStates)
+        public Task ForceSendStates(List<BusState> busStates)
         {
             _logger.LogInformation("Sending states to clients...");
-            return Clients.All.SendAsync(_busStatesAdapter.Serialize(busStates));
+            return Clients.All.SendStates(busStates);
         }
     }
 }
