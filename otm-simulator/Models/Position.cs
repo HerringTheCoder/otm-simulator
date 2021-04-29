@@ -5,9 +5,9 @@ namespace otm_simulator.Models
     public class Position
     {
         [JsonPropertyName("lat")]
-        public double Lat { get; set; }
+        public double Latitude { get; set; }
 
         [JsonPropertyName("lng")]
-        public double Lng { get; set; }
+        public double Longitude { get; set; }
     }
 }

@@ -6,10 +6,10 @@ namespace otm_simulator.Models
     public class Path
     {
         [JsonPropertyName("id")]
-        public int ID { get; set; }
+        public int Id { get; set; }
 
         [JsonPropertyName("busline_id")]
-        public int BuslineID { get; set; }
+        public int BuslineId { get; set; }
 
         [JsonPropertyName("stations")]
         public List<Station> Stations { get; set; }

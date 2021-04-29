@@ -18,17 +18,17 @@ namespace otm_simulator.Tests
             };
             for (int p = 1; p <= 5; p++)
             {
-                Timetable.Paths.Add(new Path() { ID = p, BuslineID = p, Stations = new List<Station>(), Courses = new List<Course>() });
+                Timetable.Paths.Add(new Path() { Id = p, BuslineId = p, Stations = new List<Station>(), Courses = new List<Course>() });
             }
             foreach (Path path in Timetable.Paths)
             {
                 var random = new Random();
-                path.Courses.Add(new Course() { ID = random.Next(), PathID = path.ID, StartTime = DateTime.Now.AddSeconds(0).TimeOfDay.ToString() });
-                path.Courses.Add(new Course() { ID = random.Next(), PathID = path.ID, StartTime = DateTime.Now.AddSeconds(1).TimeOfDay.ToString() });
-                path.Courses.Add(new Course() { ID = random.Next(), PathID = path.ID, StartTime = DateTime.Now.AddSeconds(2).TimeOfDay.ToString() });
+                path.Courses.Add(new Course() { Id = random.Next(), PathId = path.Id, StartTime = DateTime.Now.AddSeconds(0).TimeOfDay.ToString() });
+                path.Courses.Add(new Course() { Id = random.Next(), PathId = path.Id, StartTime = DateTime.Now.AddSeconds(1).TimeOfDay.ToString() });
+                path.Courses.Add(new Course() { Id = random.Next(), PathId = path.Id, StartTime = DateTime.Now.AddSeconds(2).TimeOfDay.ToString() });
                 for (int s = 1; s <= 5; s++)
                 {
-                    path.Stations.Add(new Station() { ID = s, Name = "", Position = new Position() { Lat = s + 50, Lng = s + 51 }, TravelTime = s });
+                    path.Stations.Add(new Station() { Id = s, Name = "", Position = new Position() { Latitude = s + 50, Longitude = s + 51 }, TravelTime = s });
                 }
             }
 

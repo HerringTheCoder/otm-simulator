@@ -1,33 +1,29 @@
-using otm_simulator.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
 
 namespace otm_simulator.Models
 {
     public class BusState
     {
-        public Position CurrentPosition { get; set; }
+        public Position CurrentPosition { get; private set; }
 
-        public string Status { get; set; }
+        public string Status { get; private set; }
 
-        public int Delay { get; set; }
+        public int Delay { get; private set; }
 
-        public Course Course { get; set; }
+        public Course Course { get; private set; }
 
-        public List<Station> Stations { internal get; set; }
+        internal List<Station> Stations { get; private set; }
 
-        public int DestinationStationIndex { internal get; set; }
-
-        public int ExecutedSteps { internal get; set; }
-
-        public int EstimatedSteps { internal get; set; }
+        internal int DestinationStationIndex { get; private set; }
 
         public Dictionary<string, Func<string>> ActionDictionary { get; set; }
 
-        public BusState(List<Station> stations, Course course, int UpdateInterval)
+        private int _executedSteps;
+        private int _estimatedSteps;      
+
+        public BusState(List<Station> stations, Course course, int updateInterval)
         {
             CurrentPosition = stations.First().Position;
             Status = "Standing";
@@ -35,24 +31,24 @@ namespace otm_simulator.Models
             Course = course;
             Stations = stations;
             DestinationStationIndex = 1;
-            ExecutedSteps = 0;
-            EstimatedSteps = CalculateEstimatedSteps(UpdateInterval);
-            while (EstimatedSteps == 0 && DestinationStationIndex <= Stations.Count())
+            _executedSteps = 0;
+            CalculateEstimatedSteps(updateInterval);
+            while (CheckIfStationIsReached())
             {
                 SetNextDestination();
-                EstimatedSteps = CalculateEstimatedSteps(UpdateInterval);
+                CalculateEstimatedSteps(updateInterval);
             }
             ActionDictionary = new Dictionary<string, Func<string>>
             {
                 { "Driving", new Func<string>(() => {
                     CalculateNextStepPosition();
                     Status = "Driving";
-                    return $"BusState position changed. Current Progress: {ExecutedSteps}/{EstimatedSteps}, Overall Progress: {DestinationStationIndex}/{Stations.Count()}, Delay: {Delay}";
+                    return $"BusState position changed. Current Progress: {_executedSteps}/{_estimatedSteps}, Overall Progress: {DestinationStationIndex}/{Stations.Count()}, Delay: {Delay}";
                 })
                 },
 
                 { "Standing", new Func<string>(() => {
-                    ExecutedSteps++;
+                    _executedSteps++;
                     Status = "Standing";
                     return "BusState position unchanged";
                 })
@@ -70,12 +66,11 @@ namespace otm_simulator.Models
         /// <summary>
         /// Calculates estimated travel time between two stations
         /// </summary>
-        private int CalculateEstimatedSteps(int updateInterval)
+        public void CalculateEstimatedSteps(int updateInterval)
         {
             int travelTime1 = Stations[DestinationStationIndex - 1].TravelTime;
             int travelTime2 = Stations[DestinationStationIndex].TravelTime;
-            int estimatedSteps = (travelTime2 - travelTime1) * 60 / updateInterval;
-            return estimatedSteps;
+            _estimatedSteps = (travelTime2 - travelTime1) * 60 / updateInterval;
         }
 
         /// <summary>
@@ -85,11 +80,11 @@ namespace otm_simulator.Models
         {
             Position start = Stations[DestinationStationIndex - 1].Position;
             Position finish = Stations[DestinationStationIndex].Position;
-            ExecutedSteps++;
+            _executedSteps++;
             CurrentPosition = new Position
             {
-                Lat = start.Lat + (finish.Lat - start.Lat) * ((double)ExecutedSteps / EstimatedSteps),
-                Lng = start.Lng + (finish.Lng - start.Lng) * ((double)ExecutedSteps / EstimatedSteps),
+                Latitude = start.Latitude + (finish.Latitude - start.Latitude) * ((double)_executedSteps / _estimatedSteps),
+                Longitude = start.Longitude + (finish.Longitude - start.Longitude) * ((double)_executedSteps / _estimatedSteps),
             };
         }
 
@@ -99,8 +94,18 @@ namespace otm_simulator.Models
         public void SetNextDestination()
         {
             DestinationStationIndex++;
-            ExecutedSteps = 0;
+            _executedSteps = 0;
             CurrentPosition = Stations[DestinationStationIndex - 1].Position;
+        }
+
+        public bool CheckIfStationIsReached()
+        {
+            return _executedSteps >= _estimatedSteps;   
+        }
+
+        public bool CheckIfCourseIsFinished()
+        {
+            return DestinationStationIndex == Stations.Count;
         }
     }
 }

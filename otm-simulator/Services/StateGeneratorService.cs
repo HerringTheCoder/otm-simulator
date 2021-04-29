@@ -92,7 +92,7 @@ namespace otm_simulator.Services
                     var startTime = DateTime.Parse(course.StartTime);
                     int updateIntervalInSeconds = _appSettings.Value.UpdateIntervalInSeconds;
                     if (_timeProvider.Now < startTime.AddSeconds(updateIntervalInSeconds) &&
-                        _timeProvider.Now > startTime.AddSeconds(-updateIntervalInSeconds) && BusStates.All(item => item.Course.ID != course.ID))
+                        _timeProvider.Now > startTime.AddSeconds(-updateIntervalInSeconds) && BusStates.All(item => item.Course.Id != course.Id))
                     {
                         BusStates.Add(new BusState(path.Stations, course, updateIntervalInSeconds));
                         _logger.LogInformation("Successfully created a new BusState");
@@ -111,14 +111,14 @@ namespace otm_simulator.Services
         }
 
         /// <summary>
-        /// Get list of all active BusState objects which contain provided PathID
+        /// Get list of all active BusState objects which contain provided PathId
         /// </summary>
         /// <param name="pathId"></param>
         /// <returns>List of BusState objects</returns>
         public List<BusState> GetPathState(int pathId)
         {
             return BusStates
-                .Where(busState => busState.Course.PathID == pathId)
+                .Where(busState => busState.Course.PathId == pathId)
                 .ToList();
         }
 
