@@ -39,6 +39,7 @@ namespace otm_simulator.Services
                 catch (Exception ex)
                 {
                     _logger.LogError(ex.Message);
+                    throw;
                 }
             }
             _logger.LogInformation("BackgroundProvider background task is stopping.");
