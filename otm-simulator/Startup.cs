@@ -34,8 +34,8 @@ namespace otm_simulator
             services.AddHttpClient();
             services.Configure<AppSettings>(Configuration);
             services.AddSignalR();
-            services.AddScoped<ITimeProvider, TimeProvider>();
-            services.AddScoped(typeof(ITimetableAdapter<>), typeof(TimetableAdapterService<>));
+            services.AddTransient<ITimeProvider, TimeProvider>();
+            services.AddTransient(typeof(ITimetableAdapter<>), typeof(TimetableAdapterService<>));
             services.AddSingleton<IHostedService, BackgroundProvider>();
             services.AddSingleton<ITimetableProvider, TimetableProviderService>();
             services.AddSingleton<IStateGenerator, StateGeneratorService>();

@@ -26,12 +26,20 @@ namespace otm_simulator.Services
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                _logger.LogInformation("BackgroundProvider is attempting Courses fetch...");
-                await _timetableProvider.FetchAsync();
-                _logger.LogInformation("Data fetch executed successfully at: " + _timetableProvider.Timetable.UpdatedAt);
-                _logger.LogInformation("Synchronizing StateGenerator data...");
-                _stateGenerator.SyncDataWithProvider();              
-                await Task.Delay(TimeSpan.FromMinutes(10), stoppingToken);            
+                try
+                {
+                    _logger.LogInformation("BackgroundProvider is attempting Courses fetch...");
+                    await _timetableProvider.FetchAsync();
+                    _logger.LogInformation("Data fetch executed successfully at: " +
+                                           _timetableProvider.Timetable.UpdatedAt);
+                    _logger.LogInformation("Synchronizing StateGenerator data...");
+                    _stateGenerator.SyncDataWithProvider();
+                    await Task.Delay(TimeSpan.FromMinutes(10), stoppingToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex.Message);
+                }
             }
             _logger.LogInformation("BackgroundProvider background task is stopping.");
         }

@@ -56,6 +56,7 @@ namespace otm_simulator.Services
                     _logger.LogError(e.Message);
                     return;
                 }
+
                 _logger.LogInformation(busState.ActionDictionary[drawnStatus].Invoke());
                 while (busState.CheckIfStationIsReached())
                 {
