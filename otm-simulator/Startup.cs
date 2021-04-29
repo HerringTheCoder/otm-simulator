@@ -19,7 +19,6 @@ namespace otm_simulator
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCors(options =>
@@ -33,18 +32,16 @@ namespace otm_simulator
             });
             services.AddControllers();
             services.AddHttpClient();
-            services.AddSingleton<ITimetableProvider, TimetableProviderService>();
             services.Configure<AppSettings>(Configuration);
             services.AddSignalR();
-            services.AddTransient<ITimeProvider, TimeProvider>();
-            services.AddTransient(typeof(ITimetableAdapter<>), typeof(TimetableAdapterService<>));
+            services.AddScoped<ITimeProvider, TimeProvider>();
+            services.AddScoped(typeof(ITimetableAdapter<>), typeof(TimetableAdapterService<>));
             services.AddSingleton<IHostedService, BackgroundProvider>();
-            services.AddSingleton<StatesHub>();
-            services.AddSingleton<IHostedService, BackgroundWorker>();
+            services.AddSingleton<ITimetableProvider, TimetableProviderService>();
             services.AddSingleton<IStateGenerator, StateGeneratorService>();
+            services.AddHostedService<BackgroundWorker>();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -63,7 +60,7 @@ namespace otm_simulator
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapHub<StatesHub>("/stateshub");
+                endpoints.MapHub<StatesHub>("/hubs/states");
             });
         }
     }

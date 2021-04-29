@@ -45,10 +45,12 @@ namespace otm_simulator_testing
             ITimetableProvider timetableProviderMock = new TimetableProviderMock();
             timetableProviderMock.FetchAsync();
             var appSettings = Options.Create(new AppSettings());
-            appSettings.Value.UpdateInterval = 1;
+            appSettings.Value.UpdateIntervalInSeconds = 1;
             var loggerMock = new Mock<ILogger<StateGeneratorService>>();
-            ITimeProvider timeProvider = new TimeProviderMock();
-            timeProvider.Now = DateTime.Now;
+            ITimeProvider timeProvider = new TimeProviderMock
+            {
+                Now = DateTime.Now
+            };
             if (timeHasPassed == true)
             {
                 timeProvider.Now = DateTime.Now.AddMinutes(5);

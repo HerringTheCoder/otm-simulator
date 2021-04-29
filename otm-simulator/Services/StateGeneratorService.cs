@@ -12,7 +12,7 @@ namespace otm_simulator.Services
     public class StateGeneratorService : IStateGenerator
     {
         public List<BusState> BusStates { get; set; }
-        private IEnumerable<Path> paths;
+        private IEnumerable<Path> _paths;
         private readonly ITimetableProvider _timetableProvider;
         private readonly IOptions<AppSettings> _appSettings;
         private readonly ILogger<StateGeneratorService> _logger;
@@ -35,7 +35,7 @@ namespace otm_simulator.Services
         /// </summary>
         public void SyncDataWithProvider()
         {
-            paths = _timetableProvider.Timetable.Paths;
+            _paths = _timetableProvider.Timetable.Paths;
         }
 
         /// <summary>
@@ -55,11 +55,11 @@ namespace otm_simulator.Services
                     _logger.LogError(e.Message);
                     return;
                 }           
-                _logger.LogInformation(busState.ActionDictionary[drawnStatus].Invoke());               
-                while (busState.ExecutedSteps >= busState.EstimatedSteps)
+                _logger.LogInformation(busState.ActionDictionary[drawnStatus].Invoke());
+                while(busState.CheckIfStationIsReached())
                 {
-                    _logger.LogInformation("Next station reached!");
                     busState.SetNextDestination();
+                    busState.CalculateEstimatedSteps(_appSettings.Value.UpdateIntervalInSeconds);
                 }
             }
             _logger.LogInformation("Updated {0} BusState(s)", BusStates.Count());
@@ -73,7 +73,7 @@ namespace otm_simulator.Services
             int removedItemsCount = BusStates.RemoveAll(item =>
         _timeProvider.Now.TimeOfDay > DateTime.Parse(item.Course.StartTime).AddMinutes(item.Stations.Last().TravelTime).AddSeconds(item.Delay).TimeOfDay ||
         item.Delay >= 15 * 60 ||
-        item.DestinationStationIndex == item.Stations.Count);
+        item.CheckIfCourseIsFinished());
             if (removedItemsCount > 0)
             {
                 _logger.LogInformation("Released {0} overdue states", removedItemsCount);
@@ -85,16 +85,16 @@ namespace otm_simulator.Services
         /// </summary>
         public void CreateStates()
         {
-            foreach (Path path in paths)
+            foreach (Path path in _paths)
             {
                 foreach (Course course in path.Courses)
                 {
                     var startTime = DateTime.Parse(course.StartTime);
-                    if (_timeProvider.Now < startTime.AddSeconds(_appSettings.Value.UpdateInterval) &&
-                        _timeProvider.Now > startTime.AddSeconds(-_appSettings.Value.UpdateInterval) &&
-                        !BusStates.Any(item => item.Course.ID == course.ID))
+                    int updateIntervalInSeconds = _appSettings.Value.UpdateIntervalInSeconds;
+                    if (_timeProvider.Now < startTime.AddSeconds(updateIntervalInSeconds) &&
+                        _timeProvider.Now > startTime.AddSeconds(-updateIntervalInSeconds) && BusStates.All(item => item.Course.ID != course.ID))
                     {
-                        BusStates.Add(new BusState(path.Stations, course, _appSettings.Value.UpdateInterval));
+                        BusStates.Add(new BusState(path.Stations, course, updateIntervalInSeconds));
                         _logger.LogInformation("Successfully created a new BusState");
                     }
                 }
