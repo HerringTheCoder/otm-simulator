@@ -44,9 +44,9 @@ namespace otm_simulator.Models
                 })
                 },
 
-                { BusStatus.Driving, new Func<string>(() => {
+                { BusStatus.Standing, new Func<string>(() => {
                     _executedSteps++;
-                    Status = BusStatus.Driving;
+                    Status = BusStatus.Standing;
                     return "BusState position unchanged";
                 })
                 },
