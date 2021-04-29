@@ -6,6 +6,7 @@ using otm_simulator.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using otm_simulator.Enums;
 
 namespace otm_simulator.Services
 {
@@ -45,18 +46,18 @@ namespace otm_simulator.Services
         {
             foreach (BusState busState in BusStates)
             {
-                string drawnStatus = "";
+                BusStatus drawnStatus;
                 try
                 {
-                    drawnStatus = GetRandomizedStatus();
+                   drawnStatus = Enum.Parse<BusStatus>(GetRandomizedStatus());
                 }
                 catch (Exception e)
                 {
                     _logger.LogError(e.Message);
                     return;
-                }           
+                }
                 _logger.LogInformation(busState.ActionDictionary[drawnStatus].Invoke());
-                while(busState.CheckIfStationIsReached())
+                while (busState.CheckIfStationIsReached())
                 {
                     busState.SetNextDestination();
                     busState.CalculateEstimatedSteps(_appSettings.Value.UpdateIntervalInSeconds);

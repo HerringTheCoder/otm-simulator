@@ -1,24 +1,20 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using otm_simulator.Enums;
 
 namespace otm_simulator.Models
 {
     public class BusState
     {
         public Position CurrentPosition { get; private set; }
-
-        public string Status { get; private set; }
-
+        public BusStatus Status { get; private set; }
         public int Delay { get; private set; }
-
         public Course Course { get; private set; }
-
         internal List<Station> Stations { get; private set; }
-
         internal int DestinationStationIndex { get; private set; }
 
-        public Dictionary<string, Func<string>> ActionDictionary { get; set; }
+        public Dictionary<BusStatus, Func<string>> ActionDictionary { get; set; }
 
         private int _executedSteps;
         private int _estimatedSteps;      
@@ -26,7 +22,7 @@ namespace otm_simulator.Models
         public BusState(List<Station> stations, Course course, int updateInterval)
         {
             CurrentPosition = stations.First().Position;
-            Status = "Standing";
+            Status = BusStatus.Standing;
             Delay = 0;
             Course = course;
             Stations = stations;
@@ -38,25 +34,26 @@ namespace otm_simulator.Models
                 SetNextDestination();
                 CalculateEstimatedSteps(updateInterval);
             }
-            ActionDictionary = new Dictionary<string, Func<string>>
+            ActionDictionary = new Dictionary<BusStatus, Func<string>>
             {
-                { "Driving", new Func<string>(() => {
+                { BusStatus.Driving, new Func<string>(() => {
                     CalculateNextStepPosition();
-                    Status = "Driving";
-                    return $"BusState position changed. Current Progress: {_executedSteps}/{_estimatedSteps}, Overall Progress: {DestinationStationIndex}/{Stations.Count()}, Delay: {Delay}";
+                    Status = BusStatus.Driving;
+                    return $"BusState position changed. Current Progress: {_executedSteps}/{_estimatedSteps}, " +
+                           $"Overall Progress: {DestinationStationIndex}/{Stations.Count()}, Delay: {Delay}";
                 })
                 },
 
-                { "Standing", new Func<string>(() => {
+                { BusStatus.Driving, new Func<string>(() => {
                     _executedSteps++;
-                    Status = "Standing";
+                    Status = BusStatus.Driving;
                     return "BusState position unchanged";
                 })
                 },
 
-                { "Delayed", new Func<string>(() => {
+                { BusStatus.Delayed, new Func<string>(() => {
                     Delay++;
-                    Status = "Delayed";
+                    Status = BusStatus.Delayed;
                     return "BusState delay has increased.";
                 })
                 }
