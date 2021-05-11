@@ -1,5 +1,5 @@
 # otm-simulator
-Microservice based on .Net Core 5.0 stack dedicated to simulate traffic based on data provided by https://github.com/opentransportmanager/otm-api/ project.
+Standalone service based on .Net Core 5.0 stack dedicated to simulate traffic based on data provided by https://github.com/opentransportmanager/otm-api/ project.
 
 ## Requirements
 - .Net Core 5.0 Runtime installed
